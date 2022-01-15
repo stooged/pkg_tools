@@ -78,7 +78,7 @@ def writeFile(pkgInfos, fieldnames, filename):
 	try:
 		workbook.close()
 	except:
-		print 'ERROR: unable to write to file', list_file
+		print ('ERROR: unable to write to file', list_file)
 		sys.exit()
 
-	print 'Saved xlsx list to {}'.format(list_file)
+	print ('Saved xlsx list to {}'.format(list_file))

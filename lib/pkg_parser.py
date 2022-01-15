@@ -64,22 +64,22 @@ def str2hex(s, size=8):
 	if (len(s) * size) <= 32:
 		h = 0x0
 	else:
-		h = 0x0L
+		h = 0x0
 	for c in s:
-		h = (h << size) | ord(c)
+		h = (h << size) | c
 	return h
 
 def le32(bits):
 	result = 0x0
 	offset = 0
-	for i in xrange(4):
-		byte = ord(bits[i])
+	for i in range(4):
+		byte = bits[i]
 		result |= byte << offset
 		offset += 8
 	return result
 
 def le16(bits):
-	return (ord(bits[0]) | ord(bits[1]) << 8)
+	return (bits[0] | bits[1] << 8)
 
 ## classes
 class PsfHdr:
@@ -134,8 +134,11 @@ class FileTableEntry:
 		self.name = None
 
 ## main code
-PsfMagic = '\0PSF'
-PkgMagic = '\x7FCNT'
+PsfMagic = bytes.fromhex('00505346')
+PkgMagic = bytes.fromhex('7F434E54')
+
+
+
 TITLE_LANG_MAP = {
 			'00' : 'JA', '01' : 'EN', '02' : 'FR', '03' : 'ES', '04' : 'DE',
 			'05' : 'IT', '06' : 'NL', '07' : 'PT', '08' : 'RU', '09' : 'KO',
@@ -161,13 +164,13 @@ def getPkgInfo(pkg_file_path):
 			table_entries = []
 			table_entries_map = {}
 			pkg_file.seek(file_table_offset)
-			for i in xrange(num_table_entries):
+			for i in range(num_table_entries):
 				entry = FileTableEntry()
 				entry.read(pkg_file)
 				table_entries_map[entry.type] = len(table_entries)
 				table_entries.append(entry)
 
-			for i in xrange(num_table_entries):
+			for i in range(num_table_entries):
 				entry = table_entries[i]
 				if entry.type == 0x1000:
 					pkg_file.seek(entry.offset)
@@ -185,13 +188,15 @@ def getPkgInfo(pkg_file_path):
 
 					# parse param.sfo info
 					pkg_info = {}
-					for i in xrange(0, le32(psfheader.nsects)):
-						val_label = psflabels[le16(sect.label_off):].split('\x00')[0]
+					for i in range(0, le32(psfheader.nsects)):
+						val_label = psflabels[le16(sect.label_off):].split(bytes.fromhex('00'))[0].decode("utf-8")
+				
 						#data_types: string=2, integer=4, binary=0
 						val_data = ''
 						if (sect.data_type == 2):
 							val_data = psfdata[le32(sect.data_off):le32(sect.data_off)+le32(sect.datafield_used)-1]
-							pkg_info[val_label] = val_data
+							pkg_info[val_label] = val_data.decode("utf-8")
+                            
 						elif (sect.data_type == 4):
 							val_data = psfdata[le32(sect.data_off):le32(sect.data_off)+le32(sect.datafield_used)]
 							val_data = '%X' % le32(val_data)
@@ -201,10 +206,12 @@ def getPkgInfo(pkg_file_path):
 						sect = PsfSec(data[index:])
 
 			# additional infos
-
+            
+           
 			# get filesize
 			pkg_file.seek(0, os.SEEK_END)
 			pkg_info['SIZE'] = convert_bytes(pkg_file.tell())
+            
 
 			# get region
 			if (pkg_info['CONTENT_ID'][0] == 'E'):
@@ -230,7 +237,7 @@ def getPkgInfo(pkg_file_path):
 						pkg_info['SDK_VER'] =  '{}.{}'.format(val[1], val[2:4])
 
 			# title names
-			for k, v in TITLE_LANG_MAP.iteritems():
+			for k, v in TITLE_LANG_MAP.items():
 				var = 'TITLE_' + k
 				var_l = 'TITLE_' + v
 				if (var in pkg_info):
@@ -240,7 +247,7 @@ def getPkgInfo(pkg_file_path):
 
 			# languages
 			languages = []
-			for k, v in TITLE_LANG_MAP.iteritems():
+			for k, v in TITLE_LANG_MAP.items():
 				var = 'TITLE_' + k
 				if (var in pkg_info):
 					if not (pkg_info[var] == ''):
@@ -258,9 +265,9 @@ def getPkgInfo(pkg_file_path):
 			return pkg_info
 
 	except IOError:
-		print u'ERROR: i/o error during processing ({})'.format(pkg_file_path)
+		print('ERROR: i/o error during processing ({})'.format(pkg_file_path))
 	except MyError as e:
-		print u'ERROR: {} ({})'.format(e.message, pkg_file_path)
+		print('ERROR: {} ({})'.format(e.message, pkg_file_path))
 	except:
-		print u'ERROR: unexpected error:  {} ({})'.format(sys.exc_info()[0], pkg_file_path)
+		print('ERROR: unexpected error:  {} ({})'.format(sys.exc_info()[0], pkg_file_path))
 		traceback.print_exc(file=sys.stdout)

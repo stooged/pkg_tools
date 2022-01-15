@@ -4,11 +4,11 @@ REL_VERSION = 'v1.1.2'
 import sys, os, struct, traceback, re, codecs, argparse
 from lib import pkg_parser, common
 
-sys.stdout = codecs.getwriter('utf8')(sys.stdout)
-sys.stderr = codecs.getwriter('utf8')(sys.stderr)
+sys.stdout = codecs.getwriter("utf-8")(sys.stdout.detach())
+sys.stderr = codecs.getwriter("utf-8")(sys.stderr.detach())
 
-print 'pkg_tools / pkg_rename ' + REL_VERSION + ' by n1ghty'
-NAME_FORMAT = u'%TITLE% (%TITLE_ID%) [v%VER%]'
+print('pkg_tools / pkg_rename ' + REL_VERSION + ' by n1ghty')
+NAME_FORMAT = '%TITLE% (%TITLE_ID%) [v%VER%]'
 
 ## parse arguments
 parser = argparse.ArgumentParser(
@@ -26,9 +26,9 @@ parser = argparse.ArgumentParser(
 											'\'' + NAME_FORMAT + '\'',
 	formatter_class=common.Formatter
 	)
-parser.add_argument('pkg_path', type=unicode, help='the pkg file which shall be renamed (or directory when used with -d)')
+parser.add_argument('pkg_path', type=str, help='the pkg file which shall be renamed (or directory when used with -d)')
 parser.add_argument('-t', dest='testrun', action='store_true', help='only test the formatting without renaming')
-parser.add_argument('-c', dest='custom_format', type=unicode, help='custom file name format')
+parser.add_argument('-c', dest='custom_format', type=str, help='custom file name format')
 parser.add_argument('-n', dest='name_format', action='store_true', help='use a readable name format')
 parser.add_argument('-d', dest='dir', action='store_true', help='rename all files in the specified directory')
 parser.add_argument('-r', dest='recursive', action='store_true', help='include subdirectories')
@@ -36,18 +36,18 @@ parser.add_argument('-r', dest='recursive', action='store_true', help='include s
 try:
 	args = parser.parse_args()
 except:
-	print
-	print "See help (-h) for commands"
+	print()
+	print("See help (-h) for commands")
 	sys.exit()
 
 if (args.dir):
 	pkg_path = args.pkg_path
 	if os.path.isfile(pkg_path):
-		print 'error: invalid directory specified'
+		print('error: invalid directory specified')
 		sys.exit()
 else:
 	if not os.path.isfile(args.pkg_path):
-		print 'error: invalid file specified'
+		print('error: invalid file specified')
 		sys.exit()
 
 ## utility functions
@@ -98,10 +98,10 @@ def renamePkg(pkg_file_path):
 					raise pkg_parser.MyError('parsing of param.sfo failed')
 			format_out = format_out + '.pkg'
 
-			print 'Renaming \'' + os.path.split(pkg_file_path)[1] + '\' to \'' + format_out + '\''
+			print('Renaming \'' + os.path.split(pkg_file_path)[1] + '\' to \'' + format_out + '\'')
 			if (args.testrun == False):
 				if (os.path.split(pkg_file_path)[1] == format_out):
-					print '  Skipped, same filename already set.'
+					print('  Skipped, same filename already set.')
 				else:
 					pkg_new_file_path = os.path.dirname(os.path.abspath(pkg_file_path)) + '\\' + format_out
 					if os.path.exists(pkg_new_file_path):
@@ -110,9 +110,9 @@ def renamePkg(pkg_file_path):
 						os.rename(pkg_file_path, pkg_new_file_path)
 
 	except pkg_parser.MyError as e:
-		print 'ERROR:', e.message
+		print('ERROR:', e.message)
 	except:
-		print u'ERROR: unexpected error:  {} ({})'.format(sys.exc_info()[0], pkg_file_path)
+		print('ERROR: unexpected error:  {} ({})'.format(sys.exc_info()[0], pkg_file_path))
 		traceback.print_exc(file=sys.stdout)
 
 if (args.dir):

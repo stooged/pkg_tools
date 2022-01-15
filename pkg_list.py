@@ -4,7 +4,7 @@ REL_VERSION = 'v1.1.2'
 import sys, os, struct, traceback, xlsxwriter, argparse
 from lib import pkg_parser, xlsxlist, common
 
-print 'pkg_tools / pkg_list ' + REL_VERSION + ' by n1ghty'
+print('pkg_tools / pkg_list ' + REL_VERSION + ' by n1ghty')
 
 ## parse arguments
 parser = argparse.ArgumentParser(
@@ -15,36 +15,36 @@ parser = argparse.ArgumentParser(
 											+ pkg_parser.AVAILABLE_VALUES,
 	formatter_class=common.Formatter
 	)
-parser.add_argument('pkg_path', type=unicode, nargs='+', help='the path(s) to scan for pkg files')
+parser.add_argument('pkg_path', type=str, nargs='+', help='the path(s) to scan for pkg files')
 parser.add_argument('-r', dest='recursive', action='store_true', help='include subdirectories')
 parser.add_argument('-c', dest='column', nargs='+', help='specify the columns')
 parser.add_argument('-s', dest='sort', help='sort list by specific column')
 parser.add_argument('-d', dest='descending', action='store_true', help='use descending sorting')
-parser.add_argument('-o', dest='outfile', type=unicode, help='specify the output file name (without suffix)')
+parser.add_argument('-o', dest='outfile', type=str, help='specify the output file name (without suffix)')
 
 parser.set_defaults(column=['TITLE', 'TITLE_ID', 'REGION', 'VER', 'CONTENT_ID', 'SIZE'], outfile='pkg_list')
 
 try:
 	args = parser.parse_args()
 except:
-	print
-	print "See help (-h) for commands"
+	print()
+	print("See help (-h) for commands")
 	sys.exit()
 
 # arg cleanup
 if (args.sort):
 	args.sort = args.sort.upper()
-args.column = map(str.upper, args.column)
+args.column = list(map(str.upper, args.column))
 
 pkg_paths = []
 for path in args.pkg_path:
 	if not os.path.isdir(path):
-		print 'ERROR: invalid path specified'
+		print('ERROR: invalid path specified')
 		sys.exit()
 	pkg_paths.append(os.path.abspath(path))
 
 if len(args.column) != len(set(args.column)):
-	print 'ERROR: duplicate values in column list'
+	print('ERROR: duplicate values in column list')
 	sys.exit()
 
 ## utility functions
@@ -81,13 +81,13 @@ for pkg_path in pkg_paths:
 		if not (args.recursive):
 			break
 
-print
-print 'Found {} files:'.format(pkgInfos['count'])
-print '{} Applications'.format(len(pkgInfos['app']))
-print '{} Updates'.format(len(pkgInfos['upd']))
-print '{} PS2 Games'.format(len(pkgInfos['ps2']))
-print '{} PKG files failed to parse'.format(len(pkgInfos['err']))
-print
+print()
+print('Found {} files:'.format(pkgInfos['count']))
+print('{} Applications'.format(len(pkgInfos['app'])))
+print('{} Updates'.format(len(pkgInfos['upd'])))
+print('{} PS2 Games'.format(len(pkgInfos['ps2'])))
+print('{} PKG files failed to parse'.format(len(pkgInfos['err'])))
+print()
 
 # sort lists
 if args.sort and (args.sort in args.column):
@@ -100,6 +100,7 @@ if args.sort and (args.sort in args.column):
 
 # sort errorlist
 pkgInfos['err'] = sorted(pkgInfos['err'])
+
 
 # generate xlsx list
 xlsxlist.writeFile(pkgInfos, args.column, args.outfile)
